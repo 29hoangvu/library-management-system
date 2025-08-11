@@ -1,0 +1,96 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="java.sql.*, java.util.*, Servlet.DBConnection" %>
+<%
+    Connection searchConn = null;
+    List<Map<String, Object>> searchBooks = new ArrayList<>();
+    String searchQuery = request.getParameter("search");
+
+    // Lấy giá trị pagination từ request attributes (đã được set trong file gọi)
+    Integer searchCurrentPageAttr = (Integer) request.getAttribute("currentPage");
+    int searchCurrentPage = (searchCurrentPageAttr != null) ? searchCurrentPageAttr : 1;
+
+    Integer searchBooksPerPageAttr = (Integer) request.getAttribute("booksPerPage");
+    int searchBooksPerPage = (searchBooksPerPageAttr != null) ? searchBooksPerPageAttr : 20;
+
+    try {
+        searchConn = DBConnection.getConnection();
+
+        // Đếm tổng số sách
+        String countSql = "SELECT COUNT(DISTINCT b.isbn) AS total " +
+                          "FROM book b " +
+                          "JOIN author a ON b.authorId = a.id " +
+                          "LEFT JOIN bookitem bi ON b.isbn = bi.book_isbn " +
+                          "LEFT JOIN rack r ON bi.rack_id = r.rack_id " +
+                          "WHERE b.status != 'DELETED' ";
+
+        List<String> searchConditions = new ArrayList<>();
+        List<String> searchParams = new ArrayList<>();
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            String[] keywords = searchQuery.trim().toLowerCase().split("\\s+");
+            for (String keyword : keywords) {
+                searchConditions.add("(LOWER(b.title) LIKE ? OR LOWER(a.name) LIKE ? OR LOWER(b.isbn) LIKE ?)");
+                for (int i = 0; i < 3; i++) searchParams.add("%" + keyword + "%");
+            }
+        }
+
+        if (!searchConditions.isEmpty()) {
+            countSql += " AND " + String.join(" AND ", searchConditions);
+        }
+
+        PreparedStatement searchCountStmt = searchConn.prepareStatement(countSql);
+        for (int i = 0; i < searchParams.size(); i++) {
+            searchCountStmt.setString(i + 1, searchParams.get(i));
+        }
+
+        ResultSet searchCountRs = searchCountStmt.executeQuery();
+        int searchTotalBooks = 0;
+        if (searchCountRs.next()) {
+            searchTotalBooks = searchCountRs.getInt("total");
+        }
+
+        // Truy vấn dữ liệu sách
+        String searchSql = "SELECT b.isbn, b.title, a.name AS author, r.rack_number, b.quantity " +
+                     "FROM book b " +
+                     "JOIN author a ON b.authorId = a.id " +
+                     "LEFT JOIN bookitem bi ON b.isbn = bi.book_isbn " +
+                     "LEFT JOIN rack r ON bi.rack_id = r.rack_id " +
+                     "WHERE b.status != 'DELETED' ";
+
+        if (!searchConditions.isEmpty()) {
+            searchSql += " AND " + String.join(" AND ", searchConditions);
+        }
+
+        searchSql += " GROUP BY b.isbn, b.title, a.name, b.quantity, r.rack_number " +
+               " ORDER BY LEFT(r.rack_number, 1), CAST(SUBSTRING(r.rack_number, 2) AS UNSIGNED) " +
+               " LIMIT ? OFFSET ?";
+
+        PreparedStatement searchStmt = searchConn.prepareStatement(searchSql);
+        int searchIndex = 1;
+        for (String param : searchParams) {
+            searchStmt.setString(searchIndex++, param);
+        }
+        searchStmt.setInt(searchIndex++, searchBooksPerPage);
+        searchStmt.setInt(searchIndex, (searchCurrentPage - 1) * searchBooksPerPage);
+
+        ResultSet searchRs = searchStmt.executeQuery();
+        while (searchRs.next()) {
+            Map<String, Object> searchBook = new HashMap<>();
+            searchBook.put("isbn", searchRs.getString("isbn"));
+            searchBook.put("title", searchRs.getString("title"));
+            searchBook.put("author", searchRs.getString("author"));
+            searchBook.put("rack", searchRs.getString("rack_number") != null ? searchRs.getString("rack_number") : "Chưa sắp xếp");
+            searchBook.put("quantity", searchRs.getInt("quantity"));
+            searchBooks.add(searchBook);
+        }
+
+        // Set vào request attributes để file gọi có thể sử dụng
+        request.setAttribute("books", searchBooks);
+        request.setAttribute("totalBooks", searchTotalBooks);
+        
+    } catch (SQLException e) {
+        e.printStackTrace();
+        out.println("<p style='color:red;'>Lỗi truy vấn: " + e.getMessage() + "</p>");
+    } finally {
+        if (searchConn != null) try { searchConn.close(); } catch (SQLException e) { e.printStackTrace(); }
+    }
+%>
