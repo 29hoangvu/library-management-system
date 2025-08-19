@@ -23,7 +23,7 @@ public class BorrowBookServlet extends HttpServlet {
         Users user = (Users) session.getAttribute("user");
 
         if (user == null) {
-            response.sendRedirect("login.jsp");
+            response.sendRedirect("user/login.jsp");
             return;
         }
 

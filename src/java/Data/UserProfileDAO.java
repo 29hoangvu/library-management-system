@@ -1,4 +1,4 @@
-package DAO;
+package Data;
 
 import Data.UserProfile;
 import Servlet.DBConnection;

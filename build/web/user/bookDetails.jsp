@@ -106,7 +106,7 @@
                                     <i class="fas fa-download mr-2"></i>Tải về
                                 </a>
                             <% } else { %>
-                                <a href="BorrowBookServlet?isbn=<%= isbn%>" 
+                                <a href="../BorrowBookServlet?isbn=<%= isbn%>" 
                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg transition text-center font-medium w-full">
                                     <i class="fas fa-hand-holding mr-2"></i>Đăng ký mượn
                                 </a>

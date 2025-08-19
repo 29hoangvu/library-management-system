@@ -91,13 +91,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <a href="./user/profile.jsp" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                            <a href="${pageContext.request.contextPath}/user/profile.jsp" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
                                 <i class="fas fa-user mr-2"></i>Xem thông tin
                             </a>
-                            <a href="./user/borrowedBooks.jsp" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                            <a href="${pageContext.request.contextPath}/user/borrowedBooks.jsp" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
                                 <i class="fas fa-book-reader mr-2"></i>Sách đã mượn
                             </a>
-                            <a href="LogOutServlet" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                            <a href="${pageContext.request.contextPath}/LogOutServlet" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
                                 <i class="fas fa-sign-out-alt mr-2"></i>Đăng xuất
                             </a>
                         </div>

@@ -57,6 +57,6 @@ public class CancelBorrowServlet extends HttpServlet {
     }
     private void sendResponse(HttpServletResponse response, String message) throws IOException {
         response.setContentType("text/html; charset=UTF-8");
-        response.getWriter().println("<script>alert('" + message + "'); window.location.href='borrowedBooks.jsp';</script>");
+        response.getWriter().println("<script>alert('" + message + "'); window.location.href='user/borrowedBooks.jsp';</script>");
     }
 }

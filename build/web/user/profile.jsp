@@ -1,7 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
 <%@ page import="java.sql.*, java.util.*" %>
 <%@ page import="Servlet.DBConnection, Data.Users" %>
-
+<%@ page import="java.text.SimpleDateFormat" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -122,7 +122,9 @@
 
         <!-- Main Content -->
         <main class="container-enhanced py-12">
-            <%                Connection conn = DBConnection.getConnection();
+            <%            
+                SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                Connection conn = DBConnection.getConnection();
                 Users currentUser = (Users) session.getAttribute("user");
                 if (currentUser == null) {
                     response.sendRedirect("index.jsp");
@@ -154,7 +156,7 @@
                         <h1 class="text-3xl font-bold mb-2">
                             <%= rs.getString("fullName") != null ? rs.getString("fullName") : rs.getString("username")%>
                         </h1>
-                        <p class="text-white/80 text-lg"><%= rs.getString("email")%></p>
+
 
                         <!-- Status Badge -->
                         <div class="mt-4">
@@ -164,7 +166,7 @@
                                 String statusText = "";
                                 String statusIcon = "";
 
-                                if ("active".equals(status)) {
+                                if ("ACTIVE".equals(status)) {
                                     statusClass = "status-active";
                                     statusText = "Đang hoạt động";
                                     statusIcon = "fas fa-check-circle";
@@ -229,8 +231,9 @@
                             <div>
                                 <p class="text-sm text-gray-500">Ngày sinh</p>
                                 <p class="font-semibold text-gray-800">
-                                    <%= rs.getDate("birthDate") != null ? rs.getDate("birthDate") : "Chưa cập nhật"%>
+                                    <%= rs.getDate("birthDate") != null ? df.format(rs.getDate("birthDate")) : "Chưa cập nhật" %>
                                 </p>
+
                             </div>
                         </div>
                     </div>
@@ -260,7 +263,7 @@
                             <i class="fas fa-envelope text-blue-500 w-5 mr-3"></i>
                             <div>
                                 <p class="text-sm text-gray-500">Email</p>
-                                <p class="font-semibold text-gray-800"><%= rs.getString("email")%></p>
+                                <p class="font-semibold text-gray-800"><%= rs.getString("email") != null ? rs.getString("email") : "Chưa cập nhật"%></p>
                             </div>
                         </div>
 
@@ -301,7 +304,10 @@
                         <div class="text-center p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg">
                             <i class="fas fa-calendar-alt text-3xl text-orange-500 mb-2"></i>
                             <p class="text-sm text-gray-500">Hạn sử dụng</p>
-                            <p class="font-bold text-gray-800"><%= rs.getDate("expiryDate")%></p>
+                            <p class="font-bold text-gray-800">
+                                <%= rs.getDate("expiryDate") != null ? df.format(rs.getDate("expiryDate")) : "Chưa cập nhật" %>
+                            </p>
+
                         </div>
                     </div>
                 </div>
@@ -322,7 +328,7 @@
                         </div>
                     </div>
 
-                    <form id="updateProfileForm" class="p-6 space-y-6">
+                    <form action="../UpdateProfileServlet" id="updateProfileForm" class="p-6 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
@@ -349,8 +355,12 @@
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">
                                     <i class="fas fa-birthday-cake mr-2 text-orange-500"></i>Ngày sinh
                                 </label>
-                                <input type="date" id="birthDate" name="birthDate" 
-                                       value="<%= rs.getDate("birthDate") != null ? rs.getDate("birthDate") : ""%>"
+                               <%
+                                    java.sql.Date bd = rs.getDate("birthDate");
+                                    String birthDateVal = (bd != null) ? bd.toString() : "";
+                                %>
+                                <input type="date" id="birthDate" name="birthDate"
+                                       value="<%= birthDateVal %>"
                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
                             </div>
 
@@ -423,14 +433,23 @@
                 e.preventDefault();
 
                 const formData = new FormData(this);
+                const data = new URLSearchParams(); // 🟢 Phần này bạn đang thiếu
+
+                for (const pair of formData.entries()) {
+                    data.append(pair[0], pair[1]);
+                }
+
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.innerHTML;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Đang lưu...';
                 submitBtn.disabled = true;
 
-                fetch('update-profile', {
+                fetch('<%= request.getContextPath()%>/UpdateProfileServlet', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: data.toString() // 🔁 Phải gọi .toString() để gửi đúng format
                 })
                         .then(response => {
                             if (response.ok) {
@@ -451,6 +470,7 @@
                             submitBtn.disabled = false;
                         });
             });
+
 
 
             // Notification function

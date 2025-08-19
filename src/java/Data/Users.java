@@ -9,7 +9,7 @@ public class Users {
     private String status;
     private Date expiryDate;
     private int roleID;
-
+    private String email;
     public Users(int id, String username, String password, String status, Date expiryDate, int roleID) {
         this.id = id;
         this.username = username;
@@ -25,6 +25,15 @@ public class Users {
         this.status = status;
         this.expiryDate = expiryDate;
     }   
+    public Users(int id, String username, String password, String status, Date expiryDate, int roleID, String email) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.status = status;
+        this.expiryDate = expiryDate;
+        this.roleID = roleID;
+        this.email = email;
+    }
     public Users(){}
     // Getters & Setters
     public int getId() { return id; }
@@ -44,4 +53,7 @@ public class Users {
 
     public int getRoleID() { return roleID; }
     public void setRoleID(int roleID) { this.roleID = roleID; }
+    
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 }

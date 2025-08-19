@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+<web-app version="5.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd">
+    <display-name>NLN_Library</display-name>
+    <!-- Lỗi 404 -->
+    <error-page>
+        <error-code>404</error-code>
+        <location>/404.jsp</location>
+    </error-page>
+    <!-- Filter mã hóa -->
     <filter>
         <filter-name>encodingFilter</filter-name>
         <filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter</filter-class>
@@ -16,6 +23,37 @@
         <filter-name>encodingFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+    <!-- Thời gian session -->
+    <servlet-mapping>
+        <servlet-name>RestoreBookServlet</servlet-name>
+        <url-pattern>/RestoreBookServlet</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+    <!-- ==== KHAI BÁO SERVLET ==== -->
+    <servlet>
+        <servlet-name>CheckAvailabilityServlet</servlet-name>
+        <servlet-class>Servlet.CheckAvailabilityServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>PaymentReturnServlet</servlet-name>
+        <servlet-class>Payment.PaymentReturnServlet</servlet-class>
+    </servlet>
+    <!-- VNPAY samples -->
+    <servlet>
+        <servlet-name>ajaxServlet</servlet-name>
+        <servlet-class>com.vnpay.common.ajaxServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>vnpayQuery</servlet-name>
+        <servlet-class>com.vnpay.common.vnpayQuery</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>vnpayRefund</servlet-name>
+        <servlet-class>com.vnpay.common.vnpayRefund</servlet-class>
+    </servlet>
+    <!-- App servlets -->
     <servlet>
         <servlet-name>AdminServlet</servlet-name>
         <servlet-class>Servlet.AdminServlet</servlet-class>
@@ -65,10 +103,6 @@
         <servlet-class>Servlet.BorrowBookServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>AdminServlet</servlet-name>
-        <servlet-class>Servlet.AdminServlet</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>ApproveBorrowServlet</servlet-name>
         <servlet-class>Servlet.ApproveBorrowServlet</servlet-class>
     </servlet>
@@ -80,6 +114,38 @@
         <servlet-name>ReturnBookServlet</servlet-name>
         <servlet-class>Servlet.ReturnBookServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>RestoreBookServlet</servlet-name>
+        <servlet-class>Servlet.RestoreBookServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CheckAvailabilityServlet</servlet-name>
+        <url-pattern>/CheckAvailabilityServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>UpdateProfileServlet</servlet-name>
+        <servlet-class>Servlet.UpdateProfileServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateProfileServlet</servlet-name>
+        <url-pattern>/UpdateProfileServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>PaymentReturnServlet</servlet-name>
+        <url-pattern>/PaymentReturnServlet</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ajaxServlet</servlet-name>
+        <url-pattern>/vnpayajax/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>vnpayQuery</servlet-name>
+        <url-pattern>/vnpayquery/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>vnpayRefund</servlet-name>
+        <url-pattern>/vnpayrefund/*</url-pattern>
+    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>AddUserServlet</servlet-name>
         <url-pattern>/AddUserServlet</url-pattern>
