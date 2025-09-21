@@ -453,7 +453,7 @@
 
         function confirmReturn(borrowId) {
             if (confirm("Bạn có chắc muốn xác nhận trả sách không?")) {
-                fetch('ReturnBookServlet', {
+                fetch('../../ReturnBookServlet', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                     body: 'id=' + borrowId

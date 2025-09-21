@@ -1,5 +1,5 @@
 package Servlet;
-//Dk mươn sach
+
 import java.io.IOException;
 import java.sql.*;
 import jakarta.servlet.ServletException;
@@ -11,11 +11,11 @@ import jakarta.servlet.http.HttpSession;
 import Data.Users;
 
 public class BorrowBookServlet extends HttpServlet {
-    private static final int MAX_BORROW_LIMIT = 3; // Giới hạn tối đa 3 sách
-    private static final int DEFAULT_BORROW_DAYS = 7; // Thời gian mượn mặc định 7 ngày
+    private static final int MAX_BORROW_LIMIT = 3;
+    private static final int DEFAULT_BORROW_DAYS = 7;
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doPost(request, response); // Chuyển hướng GET sang POST
+        doPost(request, response);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -23,7 +23,7 @@ public class BorrowBookServlet extends HttpServlet {
         Users user = (Users) session.getAttribute("user");
 
         if (user == null) {
-            response.sendRedirect("user/login.jsp");
+            response.sendRedirect("login.jsp");
             return;
         }
 
@@ -35,6 +35,7 @@ public class BorrowBookServlet extends HttpServlet {
         }
 
         try (Connection conn = DBConnection.getConnection()) {
+
             // 1. Kiểm tra số sách đang mượn + chờ duyệt
             String checkSql = "SELECT COUNT(*) AS borrow_count FROM borrow " +
                               "WHERE user_id = ? AND (status = 'Borrowed' OR status = 'Pending Approval')";
@@ -47,20 +48,20 @@ public class BorrowBookServlet extends HttpServlet {
                 return;
             }
 
-            // 2. Lấy book_item_id chưa được mượn
-            String getBookItemSql = "SELECT book_item_id FROM bookitem WHERE book_isbn = ? " +
-                                    "AND book_item_id NOT IN (SELECT book_item_id FROM borrow WHERE status = 'Borrowed' OR status = 'Pending Approval')";
+            // 2. Lấy 1 bản vật lý còn sẵn
+            String getBookItemSql = "SELECT book_item_id FROM bookitem WHERE book_isbn = ? "; // Lấy 1 bản còn sẵn
             PreparedStatement getBookItemStmt = conn.prepareStatement(getBookItemSql);
             getBookItemStmt.setString(1, isbn);
             ResultSet bookItemRs = getBookItemStmt.executeQuery();
 
             int bookItemId;
-            if (bookItemRs.next()) { // Lấy dòng đầu tiên
-                bookItemId = bookItemRs.getInt("book_item_id");
+            if (bookItemRs.next()) {
+                bookItemId = bookItemRs.getInt("book_item_id"); // Bây giờ mới có column book_item_id
             } else {
-                sendResponse(response, "Không có sách nào sẵn sàng để mượn!");
+                sendResponse(response, "Không còn bản vật lý nào của sách này sẵn sàng để mượn!");
                 return;
             }
+
 
             // 3. Đăng ký mượn sách
             String borrowSql = "INSERT INTO borrow (book_item_id, user_id, borrowed_date, due_date, status) " +
@@ -76,6 +77,7 @@ public class BorrowBookServlet extends HttpServlet {
             } else {
                 sendResponse(response, "Lỗi: Không thể đăng ký mượn sách!");
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
             sendResponse(response, "Lỗi hệ thống! Vui lòng thử lại sau.");

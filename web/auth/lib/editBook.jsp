@@ -32,7 +32,8 @@
     // dữ liệu preload thể loại
     List<Integer> presetGenreIds = new ArrayList<>();
     Map<Integer, String> presetGenreNames = new LinkedHashMap<>();
-
+    //  preload formats (distinct từ thư viện)
+    List<String> allFormats = new ArrayList<>();
     try {
         conn = DBConnection.getConnection();
 
@@ -88,6 +89,13 @@
         }
         rs.close();
         ps.close();
+        // preload formats DISTINCT
+        ps = conn.prepareStatement("SELECT DISTINCT format FROM book WHERE format IS NOT NULL AND format<>'' ORDER BY format");
+        rs = ps.executeQuery();
+        while (rs.next()) {
+            allFormats.add(rs.getString(1));
+        }
+        rs.close(); ps.close();
 %>
 
 <!DOCTYPE html>
@@ -435,16 +443,44 @@
                                                class="input-field w-full rounded-lg px-4 py-3 focus:outline-none">
                                     </div>
 
+                                    <!-- NEW: Format xem → chỉnh -->
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-tag mr-2 text-blue-500"></i>Định dạng
+                                      <div class="flex items-center justify-between mb-2">
+                                        <label class="block text-sm font-medium text-gray-700">
+                                          <i class="fas fa-tag mr-2 text-blue-500"></i>Định dạng
                                         </label>
-                                        <select name="format"
+                                        <button type="button" id="toggleFormatEdit"
+                                                class="px-3 py-1.5 rounded-lg border text-sm hover:bg-gray-50">
+                                          Chỉnh sửa định dạng
+                                        </button>
+                                      </div>
+
+                                      <!-- Chế độ xem -->
+                                      <div id="formatView">
+                                        <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-sm inline-flex items-center gap-2">
+                                          <i class="fa-solid fa-tag text-slate-500"></i>
+                                          <%= format %>
+                                        </span>
+                                      </div>
+
+                                      <!-- Chế độ chỉnh -->
+                                      <div id="formatEdit" class="hidden mt-2">
+                                        <select name="format" id="formatSelect"
                                                 class="input-field w-full rounded-lg px-4 py-3 focus:outline-none">
-                                            <option value="Hardcover" <%= "Hardcover".equals(format) ? "selected" : ""%>>Hardcover</option>
-                                            <option value="Paperback" <%= "Paperback".equals(format) ? "selected" : ""%>>Paperback</option>
-                                            <option value="Ebook"     <%= "Ebook".equals(format) ? "selected" : ""%>>Ebook</option>
+                                          <%
+                                            Set<String> printed = new HashSet<>();
+                                            String[] std = new String[]{"Hardcover","Paperback","Ebook"};
+                                            for (String s : std) { printed.add(s.toLowerCase()); %>
+                                              <option value="<%= s %>" <%= s.equalsIgnoreCase(format) ? "selected" : "" %>><%= s %></option>
+                                          <% }
+                                            for (String f : allFormats) {
+                                              if (f != null && !printed.contains(f.toLowerCase())) { %>
+                                              <option value="<%= f %>" <%= f.equalsIgnoreCase(format) ? "selected" : "" %>><%= f %></option>
+                                          <%  } } %>
                                         </select>
+                                        <input type="hidden" name="formatEditEnabled" id="formatEditEnabled" value="false">
+                                        <p class="text-xs text-gray-500 mt-2">Danh sách lấy từ định dạng đang có trong thư viện (DISTINCT).</p>
+                                      </div>
                                     </div>
 
                                     <div>
@@ -745,6 +781,39 @@
                     alert('Vui lòng điền đầy đủ các trường bắt buộc!');
                 }
             });
+            document.addEventListener('DOMContentLoaded', function () {
+                const wrapper = document.querySelector('.file-input-wrapper');
+                const fileInput = document.querySelector('.file-input');
+                if (wrapper && fileInput) {
+                    wrapper.addEventListener('click', function (e) {
+                        // tránh click khi đang kéo chọn text
+                        if (e.target.tagName !== 'INPUT') {
+                            fileInput.click();
+                        }
+                    });
+                }
+            });
+            document.addEventListener("DOMContentLoaded", () => {
+            const btnFmt   = document.getElementById("toggleFormatEdit");
+            const viewFmt  = document.getElementById("formatView");
+            const editFmt  = document.getElementById("formatEdit");
+            const flagFmt  = document.getElementById("formatEditEnabled");
+
+            btnFmt.addEventListener("click", () => {
+              const goingEdit = editFmt.classList.contains("hidden");
+              if (goingEdit) {
+                viewFmt.classList.add("hidden");
+                editFmt.classList.remove("hidden");
+                flagFmt.value = "true";
+                btnFmt.textContent = "Xong";
+              } else {
+                viewFmt.classList.remove("hidden");
+                editFmt.classList.add("hidden");
+                flagFmt.value = "false";
+                btnFmt.textContent = "Chỉnh sửa định dạng";
+              }
+            });
+          });
         </script>
     </body>
 </html>

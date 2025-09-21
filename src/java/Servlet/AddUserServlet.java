@@ -19,7 +19,8 @@ public class AddUserServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Users adminUser = (Users) session.getAttribute("user");
 
-        
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
 
         String username = request.getParameter("username");
         String password = request.getParameter("password");

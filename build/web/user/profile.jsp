@@ -22,7 +22,7 @@
         <link rel="icon" href="./images/reading-book.png" type="image/x-icon" />
 
         <!-- Custom CSS -->
-        <link rel="stylesheet" href="home.css"/>
+        <link rel="stylesheet" href="home1.css"/>
 
         <style>
             .profile-gradient {

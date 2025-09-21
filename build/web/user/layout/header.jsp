@@ -20,48 +20,20 @@
                 </a>
             </div>
 
-            <!-- Search Form -->
-            <div class="relative hidden md:flex flex-1 max-w-md mx-8">
-                <form action="index.jsp" method="get" class="w-full">
-                    <div class="relative">
-                        <input type="text" 
-                               id="searchInput"
-                               name="search" 
-                               placeholder="Tìm sách theo tên hoặc tác giả..." 
-                               value="<%= request.getParameter("search") != null ? request.getParameter("search") : ""%>"
-                               class="w-full px-4 py-2 pr-12 rounded-full border-2 border-white/20 bg-white/10 text-white placeholder-white/70 focus:outline-none focus:border-white focus:bg-white/20 transition-all duration-300">
-                        <button type="submit" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-white hover:text-yellow-300 transition-colors">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Gợi ý kết quả -->
-                <div id="suggestions" class="absolute top-full mt-2 w-full bg-white text-black rounded-md shadow-lg max-h-60 overflow-y-auto hidden z-50">
-                    <% 
-                        List<Map<String, Object>> suggestedBooks  = (List<Map<String, Object>>) request.getAttribute("books");
-                        if (suggestedBooks != null) {
-                            for (Map<String, Object> book : suggestedBooks ) {
-                                String name = (String) book.get("name");
-                                String cover = (String) book.get("coverImage");
-                    %>
-                    <div class="suggestion-item flex items-center gap-3 px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                         onclick="document.getElementById('searchInput').value = '<%= name %>'; document.querySelector('form').submit();">
-                        <img src="<%= cover %>" alt="cover" class="w-10 h-14 object-cover rounded-sm border">
-                        <span><%= name %></span>
-                    </div>
-                    <% }} %>
-                </div>
-            </div>
+            <!-- NHÚNG UI TÌM KIẾM -->
+            <% String endpoint = request.getContextPath() + "/api/search.jsp"; %>
+            <jsp:include page="/components/searchUI.jsp">
+              <jsp:param name="endpoint" value="<%= endpoint %>"/>
+            </jsp:include>
 
             <!-- User Menu và Filter Button -->
             <div class="flex items-center space-x-4">
                 <!-- Filter Toggle Button -->
                 <button id="filterToggle" class="text-white hover:text-yellow-300 transition-colors duration-300 relative">
                     <i class="fas fa-filter text-lg"></i>
-                    <span class="hidden sm:inline ml-2">Lọc</span>
+                    <span class="hidden sm:inline ml-2"></span>
                 </button>
-
+               
                 <!-- User Menu -->
                 <div class="relative">
                     <%
@@ -248,11 +220,11 @@
             
             // Filter logic here
             const filter = this.getAttribute('data-filter');
-            filterBooks(filter);
+            filterBooksButtons(filter);
         });
     });
 
-    function filterBooks(category) {
+    function filterBooksButtons(category) {
         const bookCards = document.querySelectorAll('.book-card');
         const categories = document.querySelectorAll('.category-section');
         
@@ -292,4 +264,5 @@
             suggestions.style.display = 'none';
         }
     });
+
 </script>

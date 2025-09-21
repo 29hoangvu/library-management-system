@@ -17,17 +17,8 @@
 <body class="bg-gray-50 min-h-screen">
   <jsp:include page="../includes/header.jsp" />
 
-  <div class="container mx-auto px-4 py-8">
-    <!-- Nav -->
-    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 mb-8 shadow-xl">
-      <div class="flex flex-wrap justify-center gap-4">
-        <a href="manageUsers.jsp" class="px-6 py-3 rounded-xl text-white hover:bg-white/20 font-semibold">📋 Quản lý người dùng</a>
-        <a href="createUser.jsp" class="px-6 py-3 rounded-xl bg-white text-purple-600 font-semibold shadow-lg">➕ Tạo tài khoản</a>
-        <a href="approveUsers.jsp" class="px-6 py-3 rounded-xl text-white hover:bg-white/20 font-semibold">✅ Duyệt tài khoản</a>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-2xl p-8 shadow-xl max-w-2xl mx-auto">
+  <div class="container mx-auto px-4 py-8 mt-32">
+    <div class="bg-white rounded-2xl p-8 shadow-xl max-w-2xl mx-auto mt-24">
       <div class="flex items-center gap-3 mb-6">
         <span class="text-3xl">➕</span>
         <h2 class="text-2xl font-bold text-gray-800">Tạo Người Dùng Mới</h2>

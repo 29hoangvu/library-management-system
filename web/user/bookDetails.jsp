@@ -17,7 +17,7 @@
 
         <!-- Favicon -->
         <link rel="icon" href="./images/reading-book.png" type="image/x-icon" />
-        <link rel="stylesheet" href="home.css"/>
+        <link rel="stylesheet" href="home1.css"/>
     </head>
     <body class="page-background">
         <!-- Floating Background Elements -->

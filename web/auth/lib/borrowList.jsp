@@ -25,7 +25,7 @@
     <script>
         function approveBorrow(borrowId, bookItemId) {
             if (confirm("Bạn có chắc chắn muốn duyệt yêu cầu mượn sách này?")) {
-                window.location.href = "ApproveBorrowServlet?borrowId=" + borrowId + "&bookItemId=" + bookItemId;
+                window.location.href = "../../ApproveBorrowServlet?borrowId=" + borrowId + "&bookItemId=" + bookItemId;
             }
         }
     </script>

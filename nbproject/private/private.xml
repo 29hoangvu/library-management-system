@@ -3,15 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Nam4/LuanVan/NLN_Library/web/user/profile.jsp</file>
-            <file>file:/D:/Nam4/LuanVan/NLN_Library/web/user/borrowedBooks.jsp</file>
-            <file>file:/D:/Nam4/LuanVan/NLN_Library/src/java/Servlet/CancelBorrowServlet.java</file>
-            <file>file:/D:/Nam4/LuanVan/NLN_Library/web/user/booksByCategory.jsp</file>
+            <file>file:/D:/Nam4/LuanVan/NLN_Library/web/index.jsp</file>
+            <file>file:/D:/Nam4/LuanVan/NLN_Library/web/auth/admin/approveUsers.jsp</file>
+            <file>file:/D:/Nam4/LuanVan/NLN_Library/web/user/layout/header.jsp</file>
+            <file>file:/D:/Nam4/LuanVan/NLN_Library/web/components/searchUI.jsp</file>
+            <file>file:/D:/Nam4/LuanVan/NLN_Library/web/api/search.jsp</file>
             <file>file:/D:/Nam4/LuanVan/NLN_Library/web/auth/lib/admin.jsp</file>
-            <file>file:/D:/Nam4/LuanVan/NLN_Library/src/java/Servlet/AdminServlet.java</file>
-            <file>file:/D:/Nam4/LuanVan/NLN_Library/web/auth/lib/editBook.jsp</file>
-            <file>file:/D:/Nam4/LuanVan/NLN_Library/src/java/Servlet/UpdateBookServlet.java</file>
-            <file>file:/D:/Nam4/LuanVan/NLN_Library/src/java/Servlet/UpdateProfileServlet.java</file>
+            <file>file:/D:/Nam4/LuanVan/NLN_Library/build.xml</file>
         </group>
     </open-files>
 </project-private>

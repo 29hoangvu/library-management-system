@@ -44,7 +44,7 @@
         <form action="../LoginServlet" method="post" class="space-y-5">
             <div class="mt-10">
                 <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập</label>
-                <input type="text" id="username" name="username" required
+                <input autofocus type="text" id="username" name="username" required
                     class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
             </div>
 

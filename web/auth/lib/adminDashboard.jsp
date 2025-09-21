@@ -22,7 +22,9 @@
 <%
     // Lấy dữ liệu sau khi searchBook.jspf đã xử lý
     @SuppressWarnings(
-            "unchecked")
+            
+    
+    "unchecked")
     List<Map<String, Object>> books = (List<Map<String, Object>>) request.getAttribute("books");
     if (books == null) {
         books = new ArrayList<>();
@@ -296,6 +298,7 @@
 <script>
     // Sửa lại phần JavaScript để xử lý đóng modal
     (function () {
+        const ctx = '<%= request.getContextPath()%>'; // ví dụ: /LV-Library
         const modal = document.getElementById('deletedBooksModal');
         const openBtn = document.getElementById('openDeletedModalBtn');
         const tbody = document.getElementById('deletedBooksTbody');
@@ -352,7 +355,7 @@
             }
         });
 
-        // Khôi phục: POST tới servlet
+        // Khôi phục: POST tới servlet (SỬA TẠI ĐÂY)
         tbody?.addEventListener('click', async (e) => {
             const btn = e.target.closest('.restore-btn');
             if (!btn)
@@ -363,7 +366,7 @@
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Đang khôi phục...';
 
             try {
-                const resp = await fetch(window.location.pathname.replace(/\/[^\/]*$/, '') + '/RestoreBookServlet', {
+                const resp = await fetch(ctx + '/RestoreBookServlet', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
                     body: new URLSearchParams({isbn})
@@ -372,12 +375,11 @@
                 if (!resp.ok)
                     throw new Error('HTTP ' + resp.status);
 
-                // Xoá hàng trong bảng khi thành công
+                // Xóa dòng khỏi bảng
                 const row = tbody.querySelector('tr[data-row-isbn="' + isbn + '"]');
                 if (row)
                     row.remove();
 
-                // Nếu rỗng hết, chèn dòng thông báo
                 if (!tbody.querySelector('tr')) {
                     const tr = document.createElement('tr');
                     tr.innerHTML = '<td class="px-3 py-6 text-center text-gray-500" colspan="4">Không có sách nào đang ở trạng thái DELETED.</td>';

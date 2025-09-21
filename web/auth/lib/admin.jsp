@@ -14,6 +14,156 @@
             <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Thêm sách mới</h2>
             
             <form action="${pageContext.request.contextPath}/AdminServlet" method="post" enctype="multipart/form-data" class="space-y-6">
+                <!-- Nhập form từ ảnh (OCR/Barcode) -->
+                <div class="flex items-center gap-3 mb-3">
+                    <!-- ảnh để OCR (tuỳ bạn đã có) -->
+                    <input id="ocrImage" type="file" accept="image/*" class="block text-sm text-gray-500" />
+                    <button id="runOcr" type="button"
+                            class="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white">
+                      Đọc từ ảnh (OCR/Barcode)
+                    </button>
+
+                    <button id="enrichBtn" type="button"
+                            class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white">
+                      Tự điền từ Internet
+                    </button>
+
+                    <label class="inline-flex items-center gap-2 text-sm text-gray-600">
+                      <input id="overwrite" type="checkbox" class="accent-blue-600">
+                      Ghi đè ô đã nhập
+                    </label>
+                  </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const API_EXTRACT = "http://localhost:8000/extract";
+  const API_ENRICH  = "http://localhost:8000/enrich";
+
+  const F = {
+    isbn: document.querySelector('input[name="isbn"]'),
+    title: document.querySelector('input[name="title"]'),
+    authorName: document.querySelector('input[name="authorName"]'),
+    authorId: document.getElementById('authorId'),
+    isNewAuthor: document.getElementById('isNewAuthor'),
+    publisher: document.querySelector('input[name="publisher"]'),
+    publicationYear: document.querySelector('input[name="publicationYear"]'),
+    numberOfPages: document.querySelector('input[name="numberOfPages"]'),
+    format: document.querySelector('select[name="format"]'),
+    language: document.querySelector('input[name="language"]'),
+    genreInput: document.getElementById('genreInput'),
+    overwrite: document.getElementById('overwrite'),
+  };
+
+  function addGenreChip(name) {
+    if (!F.genreInput) return;
+    F.genreInput.value = name;
+    F.genreInput.dispatchEvent(new Event("change"));
+  }
+
+  function fillForm(v, overwrite=false) {
+    if (!v) return;
+    const set = (el, val) => {
+      if (!el || val == null || val === "") return;
+      if (overwrite || !el.value) el.value = String(val);
+    };
+    set(F.isbn, v.isbn);
+    set(F.title, v.title);
+    set(F.authorName, v.authorName);
+    if (v.authorName && F.isNewAuthor) {
+      F.isNewAuthor.value = "true";
+      if (F.authorId) F.authorId.value = "";
+    }
+    set(F.publisher, v.publisher);
+    set(F.publicationYear, v.publicationYear);
+    set(F.numberOfPages, v.numberOfPages);
+    set(F.language, v.language);
+    const fmt = (v.format || "").toUpperCase();
+    if (["HARDCOVER", "PAPERBACK", "EBOOK"].includes(fmt)) {
+      if (F.format && (overwrite || !F.format.value)) F.format.value = fmt;
+    }
+    if (Array.isArray(v.genres)) {
+      v.genres.slice(0, 5).forEach(g => addGenreChip(g));
+    }
+  }
+
+  async function fetchGoogleBooks(title, author) {
+    try {
+      const encoded = encodeURIComponent(title);
+      const url = `https://www.googleapis.com/books/v1/volumes?q=intitle:"${encoded}"`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Fail Google Books");
+      const json = await res.json();
+      const item = (json.items || [])[0];
+      if (!item) return;
+      const vi = item.volumeInfo;
+      return {
+        title: vi.title,
+        authorName: (vi.authors || [])[0],
+        publisher: vi.publisher,
+        publicationYear: (vi.publishedDate || "").slice(0, 4),
+        numberOfPages: vi.pageCount,
+        format: "EBOOK",
+        language: vi.language,
+        coverImage: vi.imageLinks?.thumbnail,
+        genres: vi.categories || []
+      };
+    } catch (e) {
+      console.warn("Google fallback failed", e);
+    }
+  }
+
+  document.getElementById("runOcr")?.addEventListener("click", async () => {
+    const file = document.getElementById("ocrImage")?.files?.[0];
+    if (!file) return alert("Hãy chọn ảnh trước nhé.");
+
+    const btn = document.getElementById("runOcr");
+    btn.disabled = true;
+    const old = btn.textContent;
+    btn.textContent = "Đang đọc ảnh…";
+
+    try {
+      const fd = new FormData();
+      fd.append("file", file, file.name);
+      const r = await fetch(API_EXTRACT, { method: "POST", body: fd });
+      const data = await r.json();
+      fillForm(data, F.overwrite?.checked);
+
+      const isbn = F.isbn?.value?.trim();
+      const title = F.title?.value?.trim();
+      const author = F.authorName?.value?.trim();
+
+      if (isbn || title) {
+        const params = new URLSearchParams();
+        if (isbn) params.set("isbn", isbn);
+        if (title) params.set("title", title);
+        if (author) params.set("authorName", author);
+
+        const r2 = await fetch(API_ENRICH, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: params
+        });
+
+        if (r2.ok) {
+          const meta = await r2.json();
+          fillForm(meta, F.overwrite?.checked);
+        } else {
+          const gb = await fetchGoogleBooks(title, author);
+          if (gb) fillForm(gb, F.overwrite?.checked);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Không đọc được từ ảnh. Thử ảnh rõ hơn nhé.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = old;
+    }
+  });
+});
+</script>
+
+
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -148,9 +298,77 @@
                         Thêm sách
                     </button>
                 </div>
+                <hr class="my-6">
             </form>
         </div>
     </section>
+    <!-- Floating Import Button (góc phải) -->
+    <button id="openExcelModal"
+            class="fixed bottom-6 right-6 z-40 rounded-full shadow-xl
+                   bg-emerald-600 hover:bg-emerald-700 text-white
+                   w-14 h-14 flex items-center justify-center"
+            title="Nhập sách từ Excel" type="button" aria-haspopup="dialog" aria-controls="excelModal">
+      <i class="fa-solid fa-file-excel text-xl"></i>
+    </button>
+
+    <!-- Modal backdrop -->
+    <div id="excelModal" class="fixed inset-0 z-50 hidden">
+      <div class="absolute inset-0 bg-black/50"></div>
+
+      <!-- Modal card -->
+      <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-5 py-4 border-b">
+            <h3 class="text-lg font-semibold">Nhập sách hàng loạt từ Excel</h3>
+            <button id="closeExcelModal" class="p-2 rounded hover:bg-gray-100" type="button" aria-label="Đóng">
+              <i class="fa-solid fa-xmark text-gray-600"></i>
+            </button>
+          </div>
+
+          <!-- Body -->
+          <div class="px-5 py-4">
+            <form action="${pageContext.request.contextPath}/AdminUploadExcelServlet"
+                  method="post" enctype="multipart/form-data" class="space-y-4" id="excelImportForm">
+              <!-- Drag & drop zone -->
+                <label for="excelFile"
+                       class="block w-full border-2 border-dashed border-emerald-300 rounded-xl p-6
+                              text-center cursor-pointer hover:border-emerald-500">
+                  <div class="flex flex-col items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-emerald-600"></i>
+                    <div class="text-sm text-gray-700">
+                      Kéo thả file vào đây hoặc <span class="font-semibold text-emerald-700 underline">chọn file</span>
+                    </div>
+                    <div class="text-xs text-gray-500">Chấp nhận: .xlsx, .xls</div>
+
+                    <!-- nơi hiển thị icon + tên file -->
+                    <div id="filePreview" class="mt-3"></div>
+                  </div>
+                  <input id="excelFile" name="excelFile" type="file" accept=".xlsx,.xls" class="hidden" required>
+                </label>
+              
+              <div class="flex items-center justify-between text-xs text-gray-500">
+                <span>Cột bắt buộc: ISBN, Title, AuthorName, PublicationYear, Format, Quantity.</span>
+                <a href="${pageContext.request.contextPath}/templates/book_import_template.xlsx"
+                   class="text-emerald-700 hover:underline">Tải file mẫu</a>
+              </div>
+            </form>
+          </div>
+
+          <!-- Footer -->
+          <div class="px-5 py-4 border-t flex items-center justify-end gap-3">
+            <button type="button" id="cancelExcelModal"
+                    class="px-4 py-2 rounded-lg border hover:bg-gray-50">Hủy</button>
+            <button form="excelImportForm" type="submit"
+                    class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white
+                           inline-flex items-center gap-2">
+              <i class="fa-solid fa-file-import"></i> Nhập từ Excel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+                    
 </main>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -265,6 +483,75 @@
         // render ban đầu (nếu cần)
         render();
     });
+    (function () {
+        const modal = document.getElementById('excelModal');
+        const openBtn = document.getElementById('openExcelModal');
+        const closeBtn = document.getElementById('closeExcelModal');
+        const cancelBtn = document.getElementById('cancelExcelModal');
+
+        function open()  { modal.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); }
+        function close() { modal.classList.add('hidden');    document.body.classList.remove('overflow-hidden'); }
+
+        openBtn.addEventListener('click', open);
+        closeBtn.addEventListener('click', close);
+        cancelBtn.addEventListener('click', close);
+        modal.addEventListener('click', (e) => {
+          // click ra ngoài card thì đóng
+          if (e.target === modal.firstElementChild) close();
+        });
+        document.addEventListener('keydown', (e) => {
+          if (!modal.classList.contains('hidden') && e.key === 'Escape') close();
+        });
+
+        // drag & drop cho vùng upload
+        const dropZone   = document.querySelector('label[for="excelFile"]');
+        const fileInput  = document.getElementById('excelFile');
+        const filePreview= document.getElementById('filePreview');
+
+        function showFileInfo(file) {
+          if (!file) { filePreview.innerHTML = ""; return; }
+          filePreview.innerHTML =
+            '<div class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border bg-emerald-50 text-emerald-700 text-sm">' +
+              '<i class="fa-solid fa-file-excel text-lg"></i>' +
+              '<span>' + file.name + '</span>' +
+            '</div>';
+        }
+
+        fileInput.addEventListener('change', function () {
+          showFileInfo(this.files && this.files.length ? this.files[0] : null);
+        });
+
+        // drag & drop
+        ['dragenter','dragover'].forEach(evt => {
+          dropZone.addEventListener(evt, e => {
+            e.preventDefault(); e.stopPropagation();
+            dropZone.classList.add('ring-2','ring-emerald-500');
+          });
+        });
+        ['dragleave','drop'].forEach(evt => {
+          dropZone.addEventListener(evt, e => {
+            e.preventDefault(); e.stopPropagation();
+            dropZone.classList.remove('ring-2','ring-emerald-500');
+          });
+        });
+        dropZone.addEventListener('drop', e => {
+          const files = e.dataTransfer.files;
+          if (files && files.length) {
+            fileInput.files = files;
+            showFileInfo(files[0]);
+          }
+        });
+        ['dragenter','dragover'].forEach(evt =>
+          dropZone.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.add('ring-2','ring-emerald-500'); })
+        );
+        ['dragleave','drop'].forEach(evt =>
+          dropZone.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('ring-2','ring-emerald-500'); })
+        );
+        dropZone.addEventListener('drop', (e)=>{
+          const files = e.dataTransfer.files;
+          if (files && files.length) fileInput.files = files;
+        });
+    })();
 </script>
 
 </div>
